@@ -2,7 +2,7 @@
 
 PSPolly is a PowerShell wrapper around [Polly](https://github.com/App-vNext/Polly). 
 
-Polly is a .NET resilience and transient-fault-handling library that allows developers to express policies such as Retry, Circuit Breaker, Timeout, Bulkhead Isolation, and Fallback in a fluent and thread-safe manner. 
+> Polly is a .NET resilience and transient-fault-handling library that allows developers to express policies such as Retry, Circuit Breaker, Timeout, Bulkhead Isolation, and Fallback in a fluent and thread-safe manner. 
 
 ![](https://img.shields.io/powershellgallery/dt/pspolly?style=for-the-badge)
 
