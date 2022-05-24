@@ -120,3 +120,19 @@ $Policy = New-PollyPolicy -Executions 5 -PerTimeSpan (New-TimeSpan -Seconds 10)
     } -OperationKey 'RateLimit'
 }
 ```
+
+## Combine Policies 
+
+Combine policies to create more powerful handling.
+
+```powershell
+$CircuitBreaker = New-PollyPolicy -CircuitBreaker -ExceptionsAllowedBeforeBreaking 3 -DurationOfBreak (New-TimeSpan -Seconds 5)
+$Retry = New-PollyPolicy -Retry -RetryCount 10
+$Policy = Join-PollyPolicy -Policy @($CircuitBreaker, $Retry)
+1..10 | ForEach-Object {
+    Invoke-PollyCommand -Policy $Policy -ScriptBlock {
+        Write-Host "Trying.."
+        throw "Failed"
+    }
+}
+```
