@@ -65,7 +65,7 @@ namespace pspolly
                                            return (TimeSpan)psObject[0].BaseObject;
                                        });
                 }
-                if (RetryWait != null)
+                else if (RetryWait != null)
                 {
                     policy = policyBuilder.WaitAndRetry(RetryWait);
                 }
