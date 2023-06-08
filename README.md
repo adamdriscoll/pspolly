@@ -53,6 +53,19 @@ Invoke-PollyCommand -Policy $Policy -ScriptBlock {
 }
 ```
 
+Retry a number of times invoking a function on each error.
+
+```powershell
+$Policy = New-PollyPolicy -Retry -RetryCount 3 -OnRetryError {
+    param($ex, $timeSpan, $retryAttempt, $context)
+    Write-Warning "Retry $retryAttempt and error $ex"
+}
+Invoke-PollyCommand -Policy $Policy -ScriptBlock {
+    Write-Host "Trying.."
+    throw "Failed"
+}
+```
+
 Retry forever.
 
 ```powershell
