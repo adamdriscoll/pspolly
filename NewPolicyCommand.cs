@@ -22,6 +22,8 @@ namespace pspolly
         [Parameter(ParameterSetName = "RetryForever")]
         [Parameter(ParameterSetName = "Retry")]
         public ScriptBlock SleepDuration { get; set; }
+        [Parameter(ParameterSetName = "Retry")]
+        public ScriptBlock OnRetryError { get; set; }
 
         [Parameter(ParameterSetName = "CircuitBreaker", Mandatory = true)]
         public SwitchParameter CircuitBreaker { get; set; }
@@ -60,18 +62,30 @@ namespace pspolly
                 if (SleepDuration != null)
                 {
                     policy = policyBuilder.WaitAndRetry(RetryCount, (retryCount) =>
-                                       {
-                                           var psObject = SleepDuration.Invoke(retryCount);
-                                           return (TimeSpan)psObject[0].BaseObject;
-                                       });
+                        {
+                            var psObject = SleepDuration.Invoke(retryCount);
+                            return (TimeSpan)psObject[0].BaseObject;
+                        },
+                        (ex, timeSpan, retryAttempt, context) =>
+                        {
+                            OnRetryError?.Invoke(ex, timeSpan, retryAttempt, context);
+                        });
                 }
                 else if (RetryWait != null)
                 {
-                    policy = policyBuilder.WaitAndRetry(RetryWait);
+                    policy = policyBuilder.WaitAndRetry(RetryWait,
+                        (ex, timeSpan, retryAttempt, context) =>
+                        {
+                            OnRetryError?.Invoke(ex, timeSpan, retryAttempt, context);
+                        });
                 }
                 else
                 {
-                    policy = policyBuilder.Retry(RetryCount);
+                    policy = policyBuilder.Retry(RetryCount,
+                        (ex, retryAttempt, context) =>
+                        {
+                            OnRetryError?.Invoke(ex, retryAttempt, context);
+                        });
                 }
             }
 
@@ -79,15 +93,22 @@ namespace pspolly
             {
                 if (SleepDuration == null)
                 {
-                    policy = policyBuilder.RetryForever();
+                    policy = policyBuilder.RetryForever((ex, retryAttempt, context) =>
+                    {
+                        OnRetryError?.Invoke(ex, retryAttempt, context);
+                    });
                 }
                 else
                 {
                     policy = policyBuilder.WaitAndRetryForever((retryCount) =>
-                    {
-                        var psObject = SleepDuration.Invoke(retryCount);
-                        return (TimeSpan)psObject[0].BaseObject;
-                    });
+                        {
+                            var psObject = SleepDuration.Invoke(retryCount);
+                            return (TimeSpan)psObject[0].BaseObject;
+                        },
+                        (ex, retryAttempt, context) =>
+                        {
+                            OnRetryError?.Invoke(ex, retryAttempt, context);
+                        });
                 }
             }
 
